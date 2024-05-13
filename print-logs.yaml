@@ -1,0 +1,42 @@
+---
+# Playbook: Retrieve execution logs from the database
+- name: Retrieve execution logs from the database
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vars/my_variables.yml
+    - vars/secret_vars.yml
+
+  tasks:
+    - block:
+        - name: Fetch execution logs from the database
+          mysql_query:
+            login_user: "{{ vault_db_user }}"
+            login_password: "{{ vault_db_user_password }}"
+            login_db: "{{ vault_db_name }}"
+            query: "SELECT * FROM execution_logs ORDER BY execution_date DESC;"
+          register: execution_logs
+
+        - name: Write execution logs to a file
+          copy:
+            content: |
+              {% for item in execution_logs.query_result[0] %}
+              ------------------------------------
+              Execution ID: {{ item.execution_id }}
+              Execution Date: {{ item.execution_date }}
+              Total Servers: {{ item.total_servers }}
+              Passwords Changed: {{ item.passwords_changed }}
+              Password Unchanged: {{ item.servers_unreachable }}
+              Reachable Hosts: {{ (item.reachable_hosts | from_json) | join(', ') }}
+              Unreachable Hosts: {{ (item.unreachable_hosts | from_json) | join(', ') }}
+              Failed Hosts: {{ (item.failed_hosts | from_json) | join(', ') }}
+              Sudo Failed Hosts: {{ (item.sudo_failed_hosts | from_json) | join(', ') }}
+              {% endfor %}
+            dest: "{{ execution_logs_file }}"
+          delegate_to: localhost
+          run_once: true
+
+      rescue:
+        - name: Handle errors during retrieval or display of execution logs
+          debug:
+            msg: "An error occurred while retrieving or displaying the execution logs. Please check the database connectivity or query syntax."
