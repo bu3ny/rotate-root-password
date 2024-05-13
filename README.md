@@ -15,6 +15,11 @@ These set of playbooks can be used to:
  - Print the exection logs (including the history) - this is useful if you'd like to share the exection summary with the audit team.
 
 # What you need to do to make it working?
+- Make sure that mysql ansible collection is installed:
+    ~~~
+    # ansible-galaxy collection install community.mysql
+    ~~~
+
 - Create vars directory like below:
     ~~~
     [root@server change-root-password-playbooks]# tree vars
@@ -374,3 +379,72 @@ These set of playbooks can be used to:
     Sudo Failed Hosts:
     ~~~
 
+# Notes:
+- To create or update an ansible vault:
+    ~~~
+    # ansible-vault create secret_vars.yml
+
+    # ansible-vault edit secret_vars.yml
+    ~~~
+
+- To decrypt the encrypted CSV file:
+    ~~~
+    # openssl enc -aes-256-cbc -pbkdf2 -d -in ../password_changes.csv.enc -pass pass:$(read -sp 'Enter encryption password: ' password; echo $password)
+    ~~~
+
+- To view the encrypted passwords in the DB and manually decrypt them:
+    ~~~
+    [root@idm-1 change-root-password-playbooks]# mysql -u root -p
+    Enter password:
+    Welcome to the MySQL monitor.  Commands end with ; or \g.
+    Your MySQL connection id is 1162
+    Server version: 8.0.36 Source distribution
+
+    Copyright (c) 2000, 2024, Oracle and/or its affiliates.
+
+    Oracle is a registered trademark of Oracle Corporation and/or its
+    affiliates. Other names may be trademarks of their respective
+    owners.
+
+    Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+    mysql> show databases;
+    +--------------------+
+    | Database           |
+    +--------------------+
+    | information_schema |
+    | mysql              |
+    | performance_schema |
+    | server_passwords   |
+    | sys                |
+    +--------------------+
+    5 rows in set (0.00 sec)
+
+    mysql> use server_passwords;
+    Reading table information for completion of table and column names
+    You can turn off this feature to get a quicker startup with -A
+
+    Database changed
+    mysql> show tables;
+    +----------------------------+
+    | Tables_in_server_passwords |
+    +----------------------------+
+    | execution_logs             |
+    | server_details             |
+    +----------------------------+
+    2 rows in set (0.01 sec)
+
+    mysql> select * from server_details;
+    +--------------+-------------+------+------------------------------------------------------------------+---------------------+
+    | IP_Address   | Server_Name | User | Encrypted_Password_AES_256                                       | password_changed_at |
+    +--------------+-------------+------+------------------------------------------------------------------+---------------------+
+    | 10.10.74.201 | server-2    | root | U2FsdGVkX1+wzQp3TKI0goBidj0m1fkbV6OLrHS6nVGa1q5kpDGpZkufomKe1pyJ | 2024-05-08 11:22:42 |
+    | 10.8.109.238 | server-1    | root | U2FsdGVkX1/LrXQ23G+nHr5iuCHHFgLO7rcGv8tPlJmK77Ysd/9cP+d7Di9DHsn9 | 2024-05-13 11:59:30 |
+    +--------------+-------------+------+------------------------------------------------------------------+---------------------+
+    2 rows in set (0.00 sec)
+
+    mysql> ^DBye
+
+
+    [root@server change-root-password-playbooks]# echo "U2FsdGVkX1/Q0NiCGBqHINB5WLVSdMvF2QLhnmDGSyNUp76iX3BkjCUFQpgZoogm" | openssl enc -aes-256-cbc -d -a -salt -pass pass:'redhat'      
+    ~~~        
