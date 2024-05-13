@@ -314,3 +314,63 @@ These set of playbooks can be used to:
 ![image](https://github.com/bu3ny/rotate-root-password/assets/10407203/f27e0861-2303-4ba0-812e-7ef28b982db5)
 
     
+- Here is how exection logs looks like (including the history):
+    ~~~
+    [root@server change-root-password-playbooks]# ansible-playbook --ask-vault-pass print-logs.yaml
+    Vault password:
+
+    PLAY [Retrieve execution logs from the database] ********************************************************************************************************************************************
+
+    TASK [Fetch execution logs from the database] ***********************************************************************************************************************************************
+    ok: [localhost]
+
+    TASK [Write execution logs to a file] *******************************************************************************************************************************************************
+    ok: [localhost]
+
+    PLAY RECAP **********************************************************************************************************************************************************************************
+    localhost                  : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+
+    [root@server change-root-password-playbooks]# cat /root/root-password-rotation/execution_logs/execution_logs.txt
+    ------------------------------------
+    Execution ID: 4
+    Execution Date: 2024-05-13T11:59:31
+    Total Servers: 7
+    Passwords Changed: 1
+    Password Unchanged: 6
+    Reachable Hosts: 10.8.109.238
+    Unreachable Hosts: 10.0.0.1, 10.0.0.2, 10.0.0.3, 10.0.0.4, 10.0.0.5
+    Failed Hosts:
+    Sudo Failed Hosts: 10.10.74.201
+    ------------------------------------
+    Execution ID: 3
+    Execution Date: 2024-05-08T11:28:04
+    Total Servers: 7
+    Passwords Changed: 1
+    Password Unchanged: 6
+    Reachable Hosts: 10.8.109.238
+    Unreachable Hosts: 10.0.0.1, 10.0.0.2, 10.0.0.3, 10.0.0.4, 10.0.0.5
+    Failed Hosts:
+    Sudo Failed Hosts: 10.10.74.201
+    ------------------------------------
+    Execution ID: 2
+    Execution Date: 2024-05-08T11:25:44
+    Total Servers: 2
+    Passwords Changed: 1
+    Password Unchanged: 1
+    Reachable Hosts: 10.8.109.238
+    Unreachable Hosts:
+    Failed Hosts:
+    Sudo Failed Hosts: 10.10.74.201
+    ------------------------------------
+    Execution ID: 1
+    Execution Date: 2024-05-08T11:22:44
+    Total Servers: 2
+    Passwords Changed: 2
+    Password Unchanged: 0
+    Reachable Hosts: 10.8.109.238, 10.10.74.201
+    Unreachable Hosts:
+    Failed Hosts:
+    Sudo Failed Hosts:
+    ~~~
+
